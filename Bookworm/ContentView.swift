@@ -12,29 +12,34 @@ struct ContentView: View {
     //a way to add books
     @Environment(\.managedObjectContext) var moc
     //read all the books we have
-    @FetchRequest(entity: Book.entity(), sortDescriptors: []) var books: FetchedResults<Book>
+    //I think of this like SQL query
+    @FetchRequest(entity: Book.entity(), sortDescriptors: [
+        NSSortDescriptor(keyPath: \Book.title, ascending: true),
+        NSSortDescriptor(keyPath: \Book.author, ascending: true)
+    ]) var books: FetchedResults<Book>
     
     @State private var showingAddScreen = false
     
     var body: some View {
          NavigationView {
             List {
-                ForEach(books, id: \.self) { book in
-                    NavigationLink(destination: Text(book.title ?? "Unknown Title")) {
-                        EmojiRatingView(rating: book.rating)
+                ForEach(books, id: \.self) { currentBook in
+                    NavigationLink(destination: DetailView(displayedBook: currentBook)) {
+                        EmojiRatingView(rating: currentBook.rating)
                             .font(.largeTitle)
 
                         VStack(alignment: .leading) {
-                            Text(book.title ?? "Unknown Title")
+                            Text(currentBook.title ?? "Unknown Title")
                                 .font(.headline)
-                            Text(book.author ?? "Unknown Author")
+                            Text(currentBook.author ?? "Unknown Author")
                                 .foregroundColor(.secondary)
                         }
                     }
-                }
+                }//for each
+                .onDelete(perform: deleteBooks)
             }//list
                 .navigationBarTitle("Bookworm")
-                .navigationBarItems(trailing: Button(action: {
+                .navigationBarItems(leading: EditButton(), trailing: Button(action: {
                     self.showingAddScreen.toggle()
                 }) {
                     Image(systemName: "plus")
@@ -45,10 +50,20 @@ struct ContentView: View {
                 }
         }// NavigationView
     }//body
-
+    
+    func deleteBooks(at offsets: IndexSet) {
+        for offset in offsets {
+            let book = books[offset]
+            moc.delete(book)
+        }
+        //I am unclear what purpose the below line serves
+        try? moc.save()
+    }
+}
+    
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
 }
-}
+
