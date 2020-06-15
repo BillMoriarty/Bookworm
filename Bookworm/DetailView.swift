@@ -8,16 +8,12 @@
 import CoreData
 import SwiftUI
 
-let dateFormatter = DateFormatter()
-
-
 struct DetailView: View {
     @Environment(\.managedObjectContext) var moc
     @Environment(\.presentationMode) var presentationMode
     @State private var showingDeleteAlert = false
     
     let displayedBook: Book
-
         
     var body: some View {
         GeometryReader { geometry in
@@ -25,6 +21,7 @@ struct DetailView: View {
                 ZStack(alignment: .bottomTrailing) {
                     Image(self.displayedBook.genre ?? "Fantasy")
                         .frame(maxWidth: geometry.size.width)
+                    
 
                     Text(self.displayedBook.genre?.uppercased() ?? "FANTASY")
                         .font(.caption)
@@ -42,7 +39,7 @@ struct DetailView: View {
                 Text(self.displayedBook.review ?? "No review")
                     .padding()
                 
-                Text(dateFormatter.string(from: self.displayedBook.date ?? Date()))
+                Text(self.dateRepresentation(for: self.displayedBook.date))
 
                 RatingView(rating: .constant(Int(self.displayedBook.rating)))
                     .font(.largeTitle)
@@ -71,6 +68,13 @@ struct DetailView: View {
         //dismiss the currently presented view, since the user just deleetd this book
         presentationMode.wrappedValue.dismiss()
     }
+    
+    func dateRepresentation(for date: Date?) -> String {
+        guard let date = date else { return "Date Unavailable" }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .long
+        return dateFormatter.string(from: date)
+    }
 }
 
 struct DetailView_Previews: PreviewProvider {
@@ -83,7 +87,7 @@ struct DetailView_Previews: PreviewProvider {
         book.genre = "Fantasy"
         book.rating = 4
         book.review = "This was a great book; I really enjoyed it."
-        book.date = Date()
+        book.date = Date.init()
         
         return NavigationView {
             DetailView(displayedBook: book)
