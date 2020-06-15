@@ -8,13 +8,17 @@
 import CoreData
 import SwiftUI
 
+let dateFormatter = DateFormatter()
+
+
 struct DetailView: View {
     @Environment(\.managedObjectContext) var moc
     @Environment(\.presentationMode) var presentationMode
     @State private var showingDeleteAlert = false
     
     let displayedBook: Book
-    
+
+        
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -37,10 +41,13 @@ struct DetailView: View {
 
                 Text(self.displayedBook.review ?? "No review")
                     .padding()
+                
+                Text(dateFormatter.string(from: self.displayedBook.date ?? Date()))
 
                 RatingView(rating: .constant(Int(self.displayedBook.rating)))
                     .font(.largeTitle)
-
+            
+                            
                 Spacer()
             }
         } // GeometryReader
@@ -76,6 +83,7 @@ struct DetailView_Previews: PreviewProvider {
         book.genre = "Fantasy"
         book.rating = 4
         book.review = "This was a great book; I really enjoyed it."
+        book.date = Date()
         
         return NavigationView {
             DetailView(displayedBook: book)
